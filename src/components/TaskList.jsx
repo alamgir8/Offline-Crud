@@ -20,7 +20,7 @@ export function TaskList() {
     }
   };
 
-  console.log("tasks", tasks);
+  // console.log("tasks", tasks);
 
   return (
     <div className="space-y-4">
