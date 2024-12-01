@@ -12,14 +12,18 @@ export function TaskForm() {
     e.preventDefault();
     if (!title.trim()) return;
 
-    await addTask({
-      title,
-      description,
-      status: TASK_STATUS.PENDING,
-    });
-
-    setTitle("");
-    setDescription("");
+    try {
+      await addTask({
+        title,
+        description,
+        status: TASK_STATUS.PENDING,
+        updatedBy: localStorage.getItem("username"),
+      });
+      setTitle("");
+      setDescription("");
+    } catch (error) {
+      console.error("Error adding task:", error);
+    }
   };
 
   return (

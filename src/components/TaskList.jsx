@@ -9,15 +9,6 @@ export function TaskList() {
   const { tasks, updateTask, deleteTask } = useTaskStore();
   const [editingTask, setEditingTask] = useState(null);
 
-  const toggleStatus = (task) => {
-    updateTask(task.id, {
-      status:
-        task.status === TASK_STATUS.PENDING
-          ? TASK_STATUS.COMPLETED
-          : TASK_STATUS.PENDING,
-    });
-  };
-
   const handleEdit = (task) => {
     setEditingTask(task);
   };
@@ -28,6 +19,8 @@ export function TaskList() {
       setEditingTask(null);
     }
   };
+
+  console.log("tasks", tasks);
 
   return (
     <div className="space-y-4">
@@ -49,9 +42,16 @@ export function TaskList() {
               >
                 {task.title}
               </h3>
-              <p className="text-gray-600 mt-1">{task.description}</p>
+              <p className="text-gray-600 mt-1 text-sm">{task.description}</p>
               <p className="text-sm text-gray-400 mt-2">
                 Created: {format(new Date(task.createdAt), "PPp")}
+              </p>
+              <p className="text-sm text-gray-400 mt-2">
+                Updated: {format(new Date(task.updatedAt), "PPp")}
+              </p>
+              <p className="text-sm text-gray-600 mt-2">
+                Updated By :{" "}
+                <span className="text-orange-600">{task.updatedBy}</span>
               </p>
             </div>
             <div className="flex space-x-2">
@@ -61,20 +61,7 @@ export function TaskList() {
               >
                 <Edit2 className="h-5 w-5" />
               </button>
-              <button
-                onClick={() => toggleStatus(task)}
-                className={`p-2 rounded-full ${
-                  task.status === TASK_STATUS.COMPLETED
-                    ? "bg-green-100 text-green-600"
-                    : "bg-gray-100 text-gray-600"
-                }`}
-              >
-                {task.status === TASK_STATUS.COMPLETED ? (
-                  <Check className="h-5 w-5" />
-                ) : (
-                  <RefreshCw className="h-5 w-5" />
-                )}
-              </button>
+
               <button
                 onClick={() => deleteTask(task.id)}
                 className="p-2 rounded-full bg-red-100 text-red-600"

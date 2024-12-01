@@ -1,45 +1,63 @@
 import { create } from "zustand";
 import { dbOperations } from "../lib/db.js";
-import { p2pManager } from "../lib/p2p.js";
+import { p2pManager } from "../lib/p2p";
 import { generateTaskId } from "../lib/utils/taskUtils.js";
-import { TASK_STATUS } from "../lib/constants.js";
 
-export const useTaskStore = create((set, get) => ({
+export const useTaskStore = create((set) => ({
   tasks: [],
 
-  addTask: async (taskData) => {
+  setTasks: (tasks) => set({ tasks }),
+
+  loadTasks: async () => {
+    try {
+      const tasks = await dbOperations.getAllTasks(); // Fetch tasks from IndexedDB
+      set({ tasks });
+    } catch (error) {
+      console.error("Failed to load tasks:", error);
+    }
+  },
+
+  addTask: async (taskData, username) => {
     const task = {
       ...taskData,
       id: generateTaskId(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      updatedBy: username, // Add the username of the person who added the task
     };
 
     try {
-      await dbOperations.addTask(task);
+      await dbOperations.addTask(task); // Save to local IndexedDB
       set((state) => ({ tasks: [...state.tasks, task] }));
-      p2pManager.broadcastTaskUpdate(task);
+
+      p2pManager.addTask(task);
     } catch (error) {
       console.error("Failed to add task:", error);
     }
   },
 
   updateTask: async (id, updates) => {
+    const updatedTask = {
+      ...updates,
+      id,
+      updatedAt: new Date().toISOString(), // Always update the updatedAt timestamp
+      updatedBy: localStorage.getItem("username"),
+    };
+
+    // Retain the original createdAt value from the existing task
+    const originalTask = useTaskStore
+      .getState()
+      .tasks.find((task) => task.id === id);
+    if (originalTask) {
+      updatedTask.createdAt = originalTask.createdAt;
+    }
     try {
-      const task = get().tasks.find((t) => t.id === id);
-      if (!task) return;
-
-      const updatedTask = {
-        ...task,
-        ...updates,
-        updatedAt: new Date().toISOString(),
-      };
-
-      await dbOperations.updateTask(updatedTask);
+      await dbOperations.updateTask(updatedTask); // Save to local IndexedDB
       set((state) => ({
         tasks: state.tasks.map((t) => (t.id === id ? updatedTask : t)),
       }));
-      p2pManager.broadcastTaskUpdate(updatedTask);
+      // Call the p2pManager method to update the task
+      p2pManager.updateTask({ id: id, ...updatedTask });
     } catch (error) {
       console.error("Failed to update task:", error);
     }
@@ -47,23 +65,14 @@ export const useTaskStore = create((set, get) => ({
 
   deleteTask: async (id) => {
     try {
-      await dbOperations.deleteTask(id);
+      await dbOperations.deleteTask(id); // Remove from local IndexedDB
       set((state) => ({
         tasks: state.tasks.filter((t) => t.id !== id),
       }));
-      p2pManager.broadcastTaskUpdate({ id, deleted: true });
+      // Call the p2pManager method to delete the task
+      p2pManager.deleteTask(id); // This triggers the socket event to delete the task
     } catch (error) {
       console.error("Failed to delete task:", error);
-    }
-  },
-
-  loadTasks: async () => {
-    try {
-      const tasks = await dbOperations.getAllTasks();
-      set({ tasks });
-    } catch (error) {
-      console.error("Failed to load tasks:", error);
-      set({ tasks: [] });
     }
   },
 }));

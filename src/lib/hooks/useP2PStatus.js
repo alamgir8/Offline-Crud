@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { p2pManager } from "../p2p.js";
+import { useState, useEffect } from 'react';
+import { p2pManager } from '../p2p.js';
 
 export function useP2PStatus() {
   const [isConnected, setIsConnected] = useState(false);
@@ -10,7 +10,7 @@ export function useP2PStatus() {
         await p2pManager.init();
         setIsConnected(true);
       } catch (error) {
-        console.error("P2P initialization failed:", error);
+        console.error('P2P initialization failed:', error);
         setIsConnected(false);
       }
     };
