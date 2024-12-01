@@ -2,8 +2,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
-// import nodePolyfills from "vite-plugin-node-polyfills";
-
 export default defineConfig({
   plugins: [
     react(),
@@ -39,12 +37,17 @@ export default defineConfig({
         ],
       },
     }),
-    // nodePolyfills(),
   ],
   optimizeDeps: {
-    exclude: ["lucide-react"],
+    exclude: ["lucide-react"], // Exclude dependencies if necessary
   },
   define: {
-    global: "window",
+    global: "window", // Make sure `global` is defined to avoid issues with the global object
+  },
+  server: {
+    proxy: {
+      // Proxy the socket connections to your backend server for development
+      "/socket.io": "http://localhost:3001", // Proxy requests for Socket.io to backend
+    },
   },
 });

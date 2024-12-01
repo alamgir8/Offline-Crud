@@ -23,7 +23,7 @@ export const useTaskStore = create((set) => ({
       id: generateTaskId(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      updatedBy: username, // Add the username of the person who added the task
+      updatedBy: localStorage.getItem("username"),
     };
 
     try {
