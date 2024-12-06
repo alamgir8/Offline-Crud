@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "date-fns": "^3.3.1",
-    "express": "^4.21.1",
+    "express": "^4.21.2",
     "idb": "^8.0.0",
     "lucide-react": "^0.344.0",
     "peerjs": "^1.5.2",
